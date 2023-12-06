@@ -1,0 +1,156 @@
+MPI
+
+;<addition 8 bit>
+start:nop
+LDA 0000H
+MOV B,A
+LDA 0001H
+ADD B
+STA 0002H
+hlt
+
+;<subtraction 8 bit>
+start:nop
+LDA 0000H
+MOV B,A
+LDA 0001H
+SUB B
+STA 0002H
+hlt
+
+;<addition 16 bit>
+start:nop
+LDA 0000H
+MOV B,A
+LDA 0001H
+MOV C,A
+LDA 0010H
+MOV D,A
+LDA 0011H
+MOV E,A
+ADD C
+STA 0021H
+MOV A,B
+ADC D
+STA 0020H
+STA 0002H
+hlt
+
+;<subtraction 16 bit>
+start:nop
+LDA 0000H
+MOV B,A
+LDA 0001H
+MOV C,A
+LDA 0010H
+MOV D,A
+LDA 0011H
+MOV E,A
+MOV A,C
+SUB E
+STA 0021H
+MOV A,B
+SBB D
+STA 0020H
+hlt
+
+;<repeated addition - multplication - 8 bit>
+start:nop
+MVI B,23H
+MVI C,06H
+MVI A,00H
+loop: ADD B
+	  DCR C
+      JNZ loop
+STA 0000H
+hlt
+
+;<bit rotation - multplication - 8 bit>
+start:nop
+LHLD 0000H
+XCHG
+MVI A,03H
+MVI C,08H
+LXI H,0000H
+loop: DAD H
+	  RAL
+      JNC skip
+      DAD D
+skip: DCR C
+	  JNZ loop      
+SHLD 0010H
+hlt
+
+;<bit rotattion - division - 8 bit>
+start:nop
+LHLD 0000H
+LDA 0002H
+MOV B,A
+MVI C,08H
+LOOP:DAD H
+    MOV A,H
+    SUB B
+    JC AHEAD
+    MOV H,A
+    INR L
+AHEAD:DCR C
+    JNZ LOOP
+SHLD 0010H
+HLT 
+
+;<array>
+start:nop
+MVI D,04H
+LXI H,0000H
+MOV A,M
+loop: INX H
+	  MOV B,M
+      CMP B
+      JC asmall
+      JNC bsmall
+      asmall: MOV A,B
+      bsmall: DCR D
+      		  JNZ loop
+              JZ storeres
+storeres: STA 0010H
+hlt
+
+;<division repeated subtraction>
+LDA 0000H
+MOV B, A
+LDA 0010H
+MVI C, 00H
+CMP B
+JC Loop
+loop1: SUB B
+INR C
+CMP B
+JNC Loop1
+Loop: STA 0021H
+MOV A, C
+STA 0020H
+Hlt
+
+;<bcd subtraction>
+
+LDA 0000H
+MOV B, A
+LDA 0010H
+ADD B
+MOV C, A
+LOWER: ANI OFH
+CPI 09H
+MOV A, C
+JC UPPER
+JZ UPPER
+ADI 06H
+UPPER: MOV C, A
+ANI FOH
+CPI 90H
+MOV A, C
+JC END
+JZ END
+ADI 60H
+END: STA 0030H
+hlt
+
